@@ -1,0 +1,23 @@
+# Rebuild taosu.blog when notes change, so /notes picks them up.
+# Needs a repo secret VERCEL_DEPLOY_HOOK (Vercel → blog project → Settings → Git → Deploy Hooks).
+name: Deploy blog
+
+on:
+  push:
+    branches: [main]
+    paths: ["notes/**"]
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::error::Repo secret VERCEL_DEPLOY_HOOK is not set"
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK"
