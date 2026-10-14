@@ -95,4 +95,21 @@ Answer the user's actual questions concisely:
 
 Do not commit unless asked. When the user says "commit and push":
 `git add notes/<file>.ipynb`, commit with the message `Add <Title> note (#<number>)`,
-push, and confirm the branch is in sync with its remote.
+push, confirm the branch is in sync with its remote, then publish to the blog (section 7).
+
+## 7. Publish to the blog
+
+The blog (taosu.blog/notes) fetches the notebooks from GitHub only when it builds, so after
+every push that changes `notes/`, rebuild it by redeploying the current production deployment:
+
+```bash
+vercel redeploy www.taosu.blog --target production --cwd C:/Users/tommy/WebstormProjects/personalBlog
+```
+
+- The domain always resolves to the live deployment, so never hard-code a `*.vercel.app` URL.
+- Then check the new note is live (expect `200`; the id is the file name with `_` → `-`):
+  `curl -sL -o /dev/null -w "%{http_code}\n" https://www.taosu.blog/notes/<id>`
+  e.g. `0128_longest_consecutive_sequence.ipynb` → `0128-longest-consecutive-sequence`.
+- If the CLI says the token is invalid, ask the user to run `! vercel login`, then retry.
+- If the command is blocked by a permission prompt or denial, don't work around it: give the
+  user the exact command to run with `!`.
